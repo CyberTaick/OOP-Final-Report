@@ -1,9 +1,15 @@
 // 簡單前端邏輯：商品、購物車、登入、商品詳情、付款模態
 (function(){
   const products = [
-    {id:1,name:'無線滑鼠',price:399,category:'周邊',stock:12,description:'高精度無線滑鼠，具備可自訂按鍵與人體工學設計。',images:['https://via.placeholder.com/280x160?text=Mouse+1','https://via.placeholder.com/280x160?text=Mouse+2','https://via.placeholder.com/280x160?text=Mouse+3']},
-    {id:2,name:'機械鍵盤',price:1990,category:'鍵盤',stock:5,description:'青軸機械鍵盤，耐用按鍵與 RGB 燈效，適合長時間打字與遊戲。',images:['https://via.placeholder.com/280x160?text=Keyboard+1','https://via.placeholder.com/280x160?text=Keyboard+2','https://via.placeholder.com/280x160?text=Keyboard+3']},
-    {id:3,name:'USB-C 充電器',price:350,category:'充電',stock:20,description:'支援 65W 快充，體積小巧，適用筆電與手機快速充電。',images:['https://via.placeholder.com/280x160?text=Charger+1','https://via.placeholder.com/280x160?text=Charger+2','https://via.placeholder.com/280x160?text=Charger+3']}
+    {id:1,name:'無線滑鼠',price:399,category:'周邊',stock:12,active:true,description:'高精度無線滑鼠，具備可自訂按鍵與人體工學設計。',images:['https://via.placeholder.com/280x160?text=Mouse+1','https://via.placeholder.com/280x160?text=Mouse+2','https://via.placeholder.com/280x160?text=Mouse+3']},
+    {id:2,name:'機械鍵盤',price:1990,category:'鍵盤',stock:5,active:true,description:'青軸機械鍵盤，耐用按鍵與 RGB 燈效，適合長時間打字與遊戲。',images:['https://via.placeholder.com/280x160?text=Keyboard+1','https://via.placeholder.com/280x160?text=Keyboard+2','https://via.placeholder.com/280x160?text=Keyboard+3']},
+    {id:3,name:'USB-C 充電器',price:350,category:'充電',stock:20,active:true,description:'支援 65W 快充，體積小巧，適用筆電與手機快速充電。',images:['https://via.placeholder.com/280x160?text=Charger+1','https://via.placeholder.com/280x160?text=Charger+2','https://via.placeholder.com/280x160?text=Charger+3']}
+  ];
+
+  // 範例訂單資料（管理者用來管理訂單）
+  const orders = [
+    {id:101, items:[{name:'無線滑鼠',qty:1}], total:399, status:'待處理'},
+    {id:102, items:[{name:'機械鍵盤',qty:1},{name:'USB-C 充電器',qty:1}], total:2340, status:'待處理'}
   ];
 
   const categories = ['所有','周邊','鍵盤','充電'];
@@ -31,13 +37,19 @@
     search:'',
     user:null,
     currentProductId:null,
-    adminEditingId:null
+    adminEditingId:null,
+    adminMode:false
   };
 
   function renderProducts(){
     const el = document.getElementById('products');
     el.innerHTML = '';
+    if(state.adminMode){
+      el.innerHTML = '';
+      return;
+    }
     const filtered = products.filter(p=>{
+      if(!p.active) return false;
       if(state.category && state.category!=='所有' && p.category!==state.category) return false;
       if(state.search && !p.name.toLowerCase().includes(state.search.toLowerCase())) return false;
       return true;
@@ -79,7 +91,12 @@
       li.addEventListener('click', ()=>{
         state.category = c;
         renderCategories();
-        renderProducts();
+        // 在管理模式下，類別會過濾管理者的商品清單
+        if(state.adminMode){
+          renderAdminPanelTab('products');
+        } else {
+          renderProducts();
+        }
       });
       ul.appendChild(li);
     });
@@ -103,6 +120,17 @@
     renderCart();
   }
 
+  function changeCartQty(productId, delta){
+    const item = state.cart.find(i=>i.id===productId);
+    if(!item) return;
+    item.qty += delta;
+    if(item.qty <= 0){
+      state.cart = state.cart.filter(i=>i.id!==productId);
+    }
+    renderCart();
+    renderProducts();
+  }
+
   function calcSubtotal(){
     return state.cart.reduce((sum,item)=>sum + item.price * item.qty, 0);
   }
@@ -122,6 +150,46 @@
   function renderCart(){
     const el = document.getElementById('cart');
     el.innerHTML = '';
+    // 管理模式下，右側變成訂單管理
+    if(state.adminMode){
+      if(orders.length === 0) {
+        el.textContent = '目前沒有待處理訂單。';
+      } else {
+        orders.forEach(o => {
+            const div = document.createElement('div');
+            div.className = 'order-item';
+            const itemsText = o.items.map(it => `${it.name} x ${it.qty}`).join(', ');
+            const badgeClass = o.status === '已處理' ? 'status-badge processed' : 'status-badge';
+            div.innerHTML = `
+              <div>
+                <div>訂單 #${o.id} <span class="${badgeClass}">${o.status}</span></div>
+                <div class="small">${itemsText}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:700">$${o.total}</div>
+                <div style="margin-top:8px"><button data-id="${o.id}" class="process">標示已處理</button></div>
+              </div>
+            `;
+            el.appendChild(div);
+          });
+        el.querySelectorAll('.process').forEach(btn=>{
+          btn.addEventListener('click', e => toggleOrderProcessed(Number(e.currentTarget.dataset.id)));
+        });
+      }
+        // 隱藏結帳按鈕與訂單摘要（小計/運費/總計）
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        if(checkoutBtn) checkoutBtn.classList.add('hidden');
+        const cartSummary = document.querySelector('#cart-panel .cart-summary');
+        if(cartSummary) cartSummary.classList.add('hidden');
+        // 確保數值不會顯示
+        document.getElementById('subtotal').textContent = '';
+        document.getElementById('discount').textContent = '';
+        document.getElementById('shipping').textContent = '';
+        document.getElementById('total').textContent = '';
+      return;
+    }
+
+    // 一般購物車顯示
     if(state.cart.length===0){
       el.textContent = '購物車目前沒有商品。';
     } else {
@@ -129,13 +197,16 @@
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
-          <div>${item.name} x ${item.qty}</div>
-          <div>$${item.price*item.qty} <button data-id="${item.id}" class="remove">移除</button></div>
+          <div>${item.name}</div>
+          <div>$${item.price*item.qty} <button data-id="${item.id}" class="qty-decrease">-</button> <span class="cart-qty">${item.qty}</span> <button data-id="${item.id}" class="qty-increase">+</button></div>
         `;
         el.appendChild(div);
       });
-      el.querySelectorAll('.remove').forEach(btn => {
-        btn.addEventListener('click', e => removeFromCart(Number(e.currentTarget.dataset.id)));
+      el.querySelectorAll('.qty-decrease').forEach(btn => {
+        btn.addEventListener('click', e => changeCartQty(Number(e.currentTarget.dataset.id), -1));
+      });
+      el.querySelectorAll('.qty-increase').forEach(btn => {
+        btn.addEventListener('click', e => changeCartQty(Number(e.currentTarget.dataset.id), 1));
       });
     }
 
@@ -148,6 +219,11 @@
     document.getElementById('discount').textContent = discount;
     document.getElementById('shipping').textContent = shipping;
     document.getElementById('total').textContent = total;
+    // 確保一般模式下顯示訂單摘要與結帳
+    const cartSummary = document.querySelector('#cart-panel .cart-summary');
+    if(cartSummary) cartSummary.classList.remove('hidden');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if(checkoutBtn) checkoutBtn.classList.remove('hidden');
   }
 
   function openProductModal(productId){
@@ -176,24 +252,35 @@
     buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
 
     if(tabName === 'products'){
-      const rows = products.map(p => `
+      const filteredProducts = products.filter(p => {
+        if(state.category && state.category !== '所有') return p.category === state.category;
+        return true;
+      });
+      const rows = filteredProducts.map(p => {
+        const statusLabel = p.active ? '上架' : '下架';
+        const stockWarning = p.stock <= 5 ? '<span class="stock-warning">庫存警示</span>' : '正常';
+        return `
         <tr>
           <td>${p.id}</td>
           <td>${p.name}</td>
           <td>${p.category}</td>
           <td>$${p.price}</td>
           <td>${p.stock}</td>
+          <td>${statusLabel}</td>
+          <td>${stockWarning}</td>
           <td>
+            <button class="secondary admin-toggle" data-id="${p.id}">${p.active ? '下架' : '上架'}</button>
             <button class="secondary admin-edit" data-id="${p.id}">編輯</button>
             <button class="secondary admin-delete" data-id="${p.id}">刪除</button>
           </td>
         </tr>
-      `).join('');
+      `}).join('');
       content.innerHTML = `
         <div class="admin-actions">
+          <button id="adminClosePanelBtn" class="secondary">返回商品頁</button>
           <button id="adminAddProductBtn" class="primary">新增商品</button>
         </div>
-        <div class="admin-table"><table><thead><tr><th>ID</th><th>商品</th><th>類別</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="admin-table"><table><thead><tr><th>ID</th><th>商品</th><th>類別</th><th>價格</th><th>庫存</th><th>狀態</th><th>庫存警示</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
         <div id="adminProductForm" class="admin-form hidden">
           <label>商品名稱<input id="adminProductName" type="text"></label>
           <label>類別<input id="adminProductCategory" type="text"></label>
@@ -252,35 +339,63 @@
     document.querySelectorAll('.admin-delete').forEach(btn => {
       btn.addEventListener('click', ()=> deleteAdminProduct(Number(btn.dataset.id)));
     });
+    document.querySelectorAll('.admin-toggle').forEach(btn => {
+      btn.addEventListener('click', ()=> toggleProductActive(Number(btn.dataset.id)));
+    });
+    const closeBtn = document.getElementById('adminClosePanelBtn');
+    if(closeBtn){
+      closeBtn.addEventListener('click', closeAdminPanel);
+    }
+  }
+
+  function toggleProductActive(productId){
+    const product = products.find(p => p.id === productId);
+    if(!product) return;
+    product.active = !product.active;
+    renderAdminPanelTab('products');
+    renderProducts();
   }
 
   function openAdminProductForm(productId){
-    const form = document.getElementById('adminProductForm');
     const isEdit = typeof productId === 'number';
     state.adminEditingId = isEdit ? productId : null;
     const product = products.find(p=>p.id===productId) || {name:'',category:'',price:'',stock:'',description:'',images:[]};
-    document.getElementById('adminProductName').value = product.name;
-    document.getElementById('adminProductCategory').value = product.category;
-    document.getElementById('adminProductPrice').value = product.price;
-    document.getElementById('adminProductStock').value = product.stock;
-    document.getElementById('adminProductDescription').value = product.description;
-    document.getElementById('adminProductImages').value = product.images ? product.images.join(', ') : '';
-    form.classList.remove('hidden');
+    // populate modal fields
+    const modal = document.getElementById('adminEditModal');
+    if(modal){
+      document.getElementById('adminModalName').value = product.name || '';
+      document.getElementById('adminModalCategory').value = product.category || '';
+      document.getElementById('adminModalPrice').value = product.price || 0;
+      document.getElementById('adminModalStock').value = product.stock || 0;
+      document.getElementById('adminModalDescription').value = product.description || '';
+      document.getElementById('adminModalImages').value = product.images ? product.images.join(', ') : '';
+      modal.classList.remove('hidden');
+    }
   }
 
   function closeAdminProductForm(){
+    const modal = document.getElementById('adminEditModal');
+    if(modal) modal.classList.add('hidden');
     const form = document.getElementById('adminProductForm');
     if(form) form.classList.add('hidden');
     state.adminEditingId = null;
   }
 
   function saveAdminProduct(){
-    const name = document.getElementById('adminProductName').value.trim();
-    const category = document.getElementById('adminProductCategory').value.trim();
-    const price = Number(document.getElementById('adminProductPrice').value);
-    const stock = Number(document.getElementById('adminProductStock').value);
-    const description = document.getElementById('adminProductDescription').value.trim();
-    const images = document.getElementById('adminProductImages').value.split(',').map(s=>s.trim()).filter(Boolean);
+    // support modal inputs if present
+    const nameEl = document.getElementById('adminModalName') || document.getElementById('adminProductName');
+    const categoryEl = document.getElementById('adminModalCategory') || document.getElementById('adminProductCategory');
+    const priceEl = document.getElementById('adminModalPrice') || document.getElementById('adminProductPrice');
+    const stockEl = document.getElementById('adminModalStock') || document.getElementById('adminProductStock');
+    const descEl = document.getElementById('adminModalDescription') || document.getElementById('adminProductDescription');
+    const imgsEl = document.getElementById('adminModalImages') || document.getElementById('adminProductImages');
+
+    const name = nameEl.value.trim();
+    const category = categoryEl.value.trim();
+    const price = Number(priceEl.value);
+    const stock = Number(stockEl.value);
+    const description = descEl.value.trim();
+    const images = imgsEl.value.split(',').map(s=>s.trim()).filter(Boolean);
 
     if(!name || !category || isNaN(price) || isNaN(stock)){
       alert('請填寫完整商品名稱、類別、價格與庫存。');
@@ -324,6 +439,7 @@
     const badge = document.getElementById('currentUser');
     const nameEl = document.getElementById('displayName');
     const loginBtn = document.getElementById('openLoginBtn');
+    const manageBtn = document.getElementById('manageProductsBtn');
     const adminPanel = document.getElementById('adminPanel');
 
     if(state.user){
@@ -336,11 +452,53 @@
     }
 
     if(state.user && state.user.role === '管理員'){
-      adminPanel.classList.remove('hidden');
-      renderAdminPanelTab('products');
+      manageBtn.classList.remove('hidden');
+      if(state.adminMode){
+        adminPanel.classList.remove('hidden');
+      } else {
+        adminPanel.classList.add('hidden');
+      }
     } else {
+      manageBtn.classList.add('hidden');
       adminPanel.classList.add('hidden');
     }
+    // 更新右側面板標題與按鈕
+    const cartTitle = document.querySelector('#cart-panel h2');
+    if(cartTitle) cartTitle.textContent = state.adminMode ? '訂單管理' : '購物車';
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if(checkoutBtn){
+      if(state.adminMode) checkoutBtn.classList.add('hidden'); else checkoutBtn.classList.remove('hidden');
+    }
+  }
+
+  function openAdminPanel(){
+    state.adminMode = true;
+    document.getElementById('productListContainer').classList.add('hidden');
+    document.getElementById('adminPanel').classList.remove('hidden');
+    renderAdminPanelTab('products');
+    // 更新右側為訂單管理
+    const cartTitle = document.querySelector('#cart-panel h2');
+    if(cartTitle) cartTitle.textContent = '訂單管理';
+    document.getElementById('checkoutBtn').classList.add('hidden');
+    renderCart();
+  }
+
+  function closeAdminPanel(){
+    state.adminMode = false;
+    document.getElementById('productListContainer').classList.remove('hidden');
+    document.getElementById('adminPanel').classList.add('hidden');
+    const cartTitle = document.querySelector('#cart-panel h2');
+    if(cartTitle) cartTitle.textContent = '購物車';
+    document.getElementById('checkoutBtn').classList.remove('hidden');
+    renderCart();
+  }
+
+  function toggleOrderProcessed(orderId){
+    const o = orders.find(x=>x.id===orderId);
+    if(!o) return;
+    o.status = '已處理';
+    renderCart();
+    showSystemMessage(`訂單 #${orderId} 已標示為 已處理`);
   }
 
   function openLoginModal(){
@@ -474,6 +632,14 @@
     document.getElementById('openLoginBtn').addEventListener('click', openLoginModal);
     document.getElementById('loginBtn').addEventListener('click', login);
     document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('manageProductsBtn').addEventListener('click', openAdminPanel);
+    // admin edit modal controls
+    const adminCloseModalBtn = document.getElementById('closeAdminEditModal');
+    if(adminCloseModalBtn) adminCloseModalBtn.addEventListener('click', closeAdminProductForm);
+    const adminModalCancel = document.getElementById('adminModalCancelBtn');
+    if(adminModalCancel) adminModalCancel.addEventListener('click', (e)=>{ e.preventDefault(); closeAdminProductForm(); });
+    const adminModalSave = document.getElementById('adminModalSaveBtn');
+    if(adminModalSave) adminModalSave.addEventListener('click', (e)=>{ e.preventDefault(); saveAdminProduct(); });
     document.getElementById('closeLoginModal').addEventListener('click', closeLoginModal);
     document.getElementById('checkoutBtn').addEventListener('click', openPaymentModal);
     document.getElementById('closeProductModal').addEventListener('click', closeProductModal);
