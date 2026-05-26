@@ -1,16 +1,21 @@
 package ecommerce.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ecommerce.class_.*;
 import ecommerce.interface_.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ShoppingSystem {
     private final List<Product> products;
     private final List<User> users;
 
+    public ShoppingSystem(IProductRepository productRepository) {
+        this.products = productRepository != null ? productRepository.loadProducts() : new ArrayList<>();
+        this.users = new ArrayList<>();
+    }
+
     public ShoppingSystem() {
+        // 保留預設建構子相容性 (但不建議，可視需求移除)
         this.products = new ArrayList<>();
         this.users = new ArrayList<>();
     }
