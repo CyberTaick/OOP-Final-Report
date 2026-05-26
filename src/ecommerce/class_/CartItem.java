@@ -1,5 +1,7 @@
 package ecommerce.class_;
 
+// 購物車項目類別，包含產品和數量
+
 public class CartItem {
     private Product product;
     private int quantity;

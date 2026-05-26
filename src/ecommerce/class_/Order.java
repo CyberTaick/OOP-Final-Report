@@ -23,16 +23,19 @@ public class Order {
         this.status = "Pending";
     }
 
+    // 計算最終總金額 (Subtotal - Discount + Shipping)
     public double calculateTotal() {
         // TODO: 計算最終總金額 (Subtotal - Discount + Shipping)
         return 0.0;
     }
 
+    // 結帳流程，呼叫付款處理邏輯，成功後變更狀態為 Completed
     public boolean checkout(IPaymentProcessor payment) {
         // TODO: 呼叫付款處理邏輯，成功後變更狀態為 Completed
         return false;
     }
 
+    // 終端：印出訂單明細
     public void printReceipt() {
         System.out.println("====== 訂單明細 ======");
         System.out.println("訂單編號: " + orderId);

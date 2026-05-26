@@ -2,6 +2,8 @@ package ecommerce.class_;
 
 import ecommerce.interface_.IShippingStrategy;
 
+// 滿額免運策略類別，實作 IShippingStrategy 介面
+
 public class FreeShippingThreshold implements IShippingStrategy {
     private final double threshold;
     private final double standardRate;
