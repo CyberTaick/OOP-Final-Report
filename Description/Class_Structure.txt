@@ -1,5 +1,9 @@
 E-Commerce System Class Structure
 
+Explation：
+ - contains：(包含 / 組合 / 聚合關係)
+ - uses：(使用 別的物件的功能)
+
 1. 核心實體 (Core Entities)
 ├── Product (商品)
 ├── CartItem (購物車項目)
