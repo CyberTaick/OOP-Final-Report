@@ -1,8 +1,10 @@
-package ecommerce;
+package ecommerce.class_;
+
+import ecommerce.interface_.IShippingStrategy;
 
 public class FreeShippingThreshold implements IShippingStrategy {
-    private double threshold;
-    private double standardRate;
+    private final double threshold;
+    private final double standardRate;
 
     public FreeShippingThreshold(double threshold, double standardRate) {
         this.threshold = threshold; // 滿額免運的門檻

@@ -1,11 +1,14 @@
-package ecommerce;
+package ecommerce.core;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import ecommerce.class_.*;
+import ecommerce.interface_.*;
+
 public class ShoppingSystem {
-    private List<Product> products;
-    private List<User> users;
+    private final List<Product> products;
+    private final List<User> users;
 
     public ShoppingSystem() {
         this.products = new ArrayList<>();
@@ -21,7 +24,7 @@ public class ShoppingSystem {
         return null;
     }
 
-    public Order createOrder(User user) {
+    public Order createOrder(User user, IDiscountStrategy discountStrategy, IShippingStrategy shippingStrategy) {
         // TODO: 為用戶目前的購物車建立訂單
         return null;
     }

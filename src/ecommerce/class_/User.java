@@ -1,9 +1,9 @@
-package ecommerce;
+package ecommerce.class_;
 
 public class User {
     private String userId;
     private String name;
-    private ShoppingCart cart;
+    private final ShoppingCart cart;
 
     public User(String userId, String name) {
         this.userId = userId;

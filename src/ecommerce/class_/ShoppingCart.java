@@ -1,10 +1,10 @@
-package ecommerce;
+package ecommerce.class_;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ShoppingCart {
-    private List<CartItem> items;
+    private final List<CartItem> items;
 
     public ShoppingCart() {
         this.items = new ArrayList<>();

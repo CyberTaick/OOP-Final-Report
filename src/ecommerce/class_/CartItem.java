@@ -1,4 +1,4 @@
-package ecommerce;
+package ecommerce.class_;
 
 public class CartItem {
     private Product product;

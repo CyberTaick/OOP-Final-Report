@@ -1,7 +1,9 @@
-package ecommerce;
+package ecommerce.class_;
+
+import ecommerce.interface_.IShippingStrategy;
 
 public class FlatRateShipping implements IShippingStrategy {
-    private double rate;
+    private final double rate;
 
     public FlatRateShipping(double rate) {
         this.rate = rate;

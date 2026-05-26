@@ -1,4 +1,4 @@
-package ecommerce;
+package ecommerce.class_;
 
 public class Product {
     private String productId;
