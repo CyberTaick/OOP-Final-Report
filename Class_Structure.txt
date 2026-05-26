@@ -1,0 +1,31 @@
+E-Commerce System Class Structure
+
+1. 核心實體 (Core Entities)
+├── Product (商品)
+├── CartItem (購物車項目)
+│   └── uses: Product
+├── ShoppingCart (購物車)
+│   └── contains: List<CartItem>
+├── User (用戶)
+│   └── contains: ShoppingCart
+└── Order (訂單)
+    ├── contains: User (Buyer)
+    ├── contains: List<CartItem>
+    ├── uses: IDiscountStrategy
+    └── uses: IShippingStrategy
+
+2. 系統管理 (System Manager)
+└── ShoppingSystem (平台總管)
+    ├── contains: List<Product>
+    └── contains: List<User>
+
+3. 策略介面與實作 (Strategies - Interfaces & Implementations)
+├── IDiscountStrategy <<Interface>> (折扣策略)
+│   └── implements: PercentageDiscount (按比例折扣)
+│
+├── IShippingStrategy <<Interface>> (運費策略)
+│   ├── implements: FlatRateShipping (固定運費)
+│   └── implements: FreeShippingThreshold (滿額免運)
+│
+└── IPaymentProcessor <<Interface>> (支付策略)
+    └── (等待後續實作金流服務，如 CreditCardPayment)
