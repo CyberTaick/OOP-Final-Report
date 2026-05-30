@@ -10,7 +10,7 @@
 **抽象**：
     interface_ 裡的 Strategy 文件。
     這些全都是只定義，不實作的介面。
-    實作交給 class_ 裡的文件完成。
+    實作交給 class_ 裡的特定文件完成。
 
 **多型**：
 * IPaymentProcessor 可以用信用卡、LinePay
