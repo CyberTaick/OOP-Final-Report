@@ -86,7 +86,9 @@ public class SimpleWebServer {
             body.append(",\"active\":true");
             body.append(",\"description\":\"\"");
             body.append(",\"category\":\"").append(escapeJson(p.getCategory())).append("\"");
-            body.append(",\"images\":[\"https://via.placeholder.com/300?text=").append(escapeJson(p.getName())).append("\"]");
+            // encode the URI properly to avoid invalid characters in JSON, actually the browser will handle URL encoding if we just pass the path, but wait, if there are spaces in the name, it's better to URL encode it or the frontend will URIEncode it? 
+            // In JSON, we can just put the string.
+            body.append(",\"images\":[\"/src/main/java/ecommerce/data_access_object/Image/").append(escapeJson(p.getName())).append(".png\"]");
             body.append("}");
             if (i < products.size() - 1) {
                 body.append(",");

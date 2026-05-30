@@ -31,6 +31,7 @@ const dom = {
   message: document.getElementById("message"),
   productModal: document.getElementById("productModal"),
   closeProductModal: document.getElementById("closeProductModal"),
+  productGallery: document.getElementById("productGallery"),
   modalProductName: document.getElementById("modalProductName"),
   modalProductDesc: document.getElementById("modalProductDesc"),
   modalProductPrice: document.getElementById("modalProductPrice"),
@@ -427,7 +428,7 @@ function renderProducts() {
     .map((product) => {
       return `
         <article class="card">
-          <img src="${product.images[0] || "https://via.placeholder.com/300"}" alt="${product.name}">
+          <img class="product-image" src="${product.images[0] || "https://via.placeholder.com/300"}" alt="${product.name}">
           <div class="card-body">
             <h3>${product.name}</h3>
             <p>${product.description || ""}</p>
@@ -452,6 +453,10 @@ function openProductModal(productId) {
     return;
   }
   currentProduct = product;
+  const imageHtml = (product.images && product.images.length > 0) ? 
+    `<img src="${product.images[0]}" alt="${product.name} 圖片">` : 
+    `<img src="https://via.placeholder.com/300" alt="無圖片">`;
+  dom.productGallery.innerHTML = imageHtml;
   dom.modalProductName.textContent = product.name;
   dom.modalProductDesc.textContent = product.description || "";
   dom.modalProductPrice.textContent = `$${product.price.toFixed(0)}`;
