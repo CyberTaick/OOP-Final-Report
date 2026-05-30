@@ -6,7 +6,7 @@
 
 1. 使用 Java 直接編譯並啟動：
 
-2. 或使用你的 IDE 直接執行 `src/main/java/ecommerce/SimpleWebServer.java`。
+2. 或使用你的 IDE 直接執行 `src/main/java/ecommerce/core/SimpleWebServer.java`。
 
 3. 啟動後，開啟瀏覽器到：
 
