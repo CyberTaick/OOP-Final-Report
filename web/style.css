@@ -36,6 +36,9 @@ body{font-family:Segoe UI, Roboto, "Noto Sans TC", sans-serif;margin:16px;color:
 
 .primary{background:#1976d2;color:#fff;border:none;padding:10px 16px;border-radius:999px;cursor:pointer;box-shadow:0 10px 24px rgba(25,118,210,.22)}
 .secondary{background:#fff;color:#1976d2;border:1px solid rgba(25,118,210,.4);padding:10px 16px;border-radius:999px;cursor:pointer}
+.discount-message{background:transparent;border:none;padding:10px 0;text-align:left;font-weight:bold;cursor:default;box-shadow:none;}
+.discount-message.success{color:#4caf50}
+.discount-message.error{color:#f44336}
 button{cursor:pointer}
 
 .stock-warning{color:#d84315;font-weight:700}

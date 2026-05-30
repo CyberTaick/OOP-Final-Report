@@ -42,6 +42,7 @@ const dom = {
   paymentMethod: document.getElementById("paymentMethod"),
   checkoutCard: document.getElementById("checkoutCard"),
   discountCode: document.getElementById("discountCode"),
+  applyDiscountBtn: document.getElementById("applyDiscountBtn"),
   paymentMessage: document.getElementById("paymentMessage"),
   confirmPaymentBtn: document.getElementById("confirmPaymentBtn"),
   shippingSelect: document.getElementById("shippingSelect"),
@@ -97,8 +98,31 @@ function attachEvents() {
   dom.checkoutBtn.addEventListener("click", openPaymentModal);
   dom.closePaymentModal.addEventListener("click", hidePaymentModal);
   dom.confirmPaymentBtn.addEventListener("click", confirmPayment);
+  
   dom.discountCode.addEventListener("input", () => {
+    dom.applyDiscountBtn.innerHTML = "套用折扣";
+    dom.applyDiscountBtn.className = "secondary";
+  });
+
+  dom.applyDiscountBtn.addEventListener("click", async () => {
+    if (dom.applyDiscountBtn.className !== "secondary") return; // If it's just text, don't trigger click again
+    
     state.discountCode = dom.discountCode.value.trim();
+    if (!state.discountCode) {
+      dom.applyDiscountBtn.innerHTML = "套用折扣";
+      dom.applyDiscountBtn.className = "secondary";
+      return;
+    }
+    const data = await refreshCartSummary();
+    if (data && data.discount > 0) {
+      dom.applyDiscountBtn.innerHTML = "✔️ 折扣套用成功";
+      dom.applyDiscountBtn.className = "discount-message success";
+    } else {
+      dom.applyDiscountBtn.innerHTML = "❌ 折扣套用失敗";
+      dom.applyDiscountBtn.className = "discount-message error";
+      state.discountCode = ""; // Reset invalid code
+      await refreshCartSummary(); // Refresh again to clear discount
+    }
   });
 
   dom.openLoginBtn.addEventListener("click", showLoginModal);
@@ -532,8 +556,10 @@ async function refreshCartSummary() {
     dom.discount.textContent = data.discount.toFixed(0);
     dom.shipping.textContent = data.shipping.toFixed(0);
     dom.total.textContent = data.total.toFixed(0);
+    return data;
   } catch (error) {
     showMessage("購物車計算失敗，請稍後重試。", true);
+    return null;
   }
 }
 
