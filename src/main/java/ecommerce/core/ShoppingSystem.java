@@ -5,6 +5,16 @@ import ecommerce.interface_.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+SimpleWebServer (HTTP 伺服器)
+         ↓
+ShoppingSystem (核心邏輯)
+    ├── 管理 Products (商品)
+    ├── 管理 Users (使用者)
+    ├── 建立 Orders (訂單)
+    └── 應用策略 (折扣、運費)
+*/
+
 public class ShoppingSystem {
     private final List<Product> products;
     private final List<User> users;
