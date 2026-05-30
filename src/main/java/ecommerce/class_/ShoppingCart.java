@@ -3,6 +3,8 @@ package ecommerce.class_;
 import java.util.ArrayList;
 import java.util.List;
 
+// 整個購物車的類別，包含多個 CartItem 和相關操作
+
 public class ShoppingCart {
     private final List<CartItem> items;
 

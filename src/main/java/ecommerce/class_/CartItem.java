@@ -1,6 +1,6 @@
 package ecommerce.class_;
 
-// 購物車項目類別，包含產品和數量
+// 購物車中每個產品項的類別，包含產品和數量
 
 public class CartItem {
     private Product product;
