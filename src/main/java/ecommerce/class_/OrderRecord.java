@@ -5,6 +5,8 @@ import ecommerce.interface_.IPaymentProcessor;
 import ecommerce.interface_.IShippingStrategy;
 import java.util.List;
 
+// 全部訂單歷史紀錄功能
+
 public class OrderRecord {
     private final String orderId;
     private final User buyer;
