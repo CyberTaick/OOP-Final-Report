@@ -27,7 +27,8 @@ public class CsvProductRepository implements IProductRepository {
         String cvsSplitBy = ",";
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(csvFilePath), StandardCharsets.UTF_8))) {
-            // 如果您的 CSV 有標題列，可以在這裡加上 br.readLine() 跳過第一行
+            // 跳過標題列
+            br.readLine();
             
             while ((line = br.readLine()) != null) {
                 // 略過空行
