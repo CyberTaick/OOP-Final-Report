@@ -19,6 +19,10 @@ http://localhost:8080/
 
 顧客帳號密碼:   customer / cust123  
 
+## 折扣碼
+
+支援折扣碼 `SAVE10` 與 `FLAT50`
+
 ## 靜態資源與 API
 
 `web/jsToJava.js` 會對 `http://localhost:8080/api` 發出請求。ㄎ
