@@ -2,6 +2,26 @@
 
 本文件詳細說明了電子商務系統中，物件導向三大核心特性（封裝、抽象、多型）的實際應用位置與物件之間的交互行為。
 
+## 快速理解
+**封裝**：
+    所有程式裡面的 Private 變數。
+    用 Method 和其他物件交流。
+
+**抽象**：
+    interface_ 裡的 Strategy 文件。
+    這些全都是只定義，不實作的介面。
+    實作交給 class_ 裡的文件完成。
+
+**多型**：
+* IPaymentProcessor 可以用信用卡、LinePay
+* IShippingStrategy 可以用固定運費、滿額免運
+* 決定：根據物件的實際型別，調用對應的方法
+
+**繼承**：
+* IPaymentProcessor 被 CreditCardPayment.java、LinePayPayment.java 給 @Override
+* IDiscountStrategy.java 被 PercentageDiscount.java 給 @Override
+* IShippingStrategy.java 被 FlatRateShipping.java、FreeShippingThreshold.java 給 @Override
+
 ---
 
 ## 一、 封裝 (Encapsulation)
