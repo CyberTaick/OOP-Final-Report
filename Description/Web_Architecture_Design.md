@@ -1,61 +1,45 @@
 # E-commerce Shopping Platform - 前後端分離架構設計 (Web Architecture)
 
 ## 一、 系統架構總覽 (System Architecture)
-本系統採用**前後端分離 (Frontend-Backend Separation)** 架構設計，將「使用者介面」與「業務邏輯」徹底拆分，兩者透過 RESTful API 以 JSON 格式進行資料交換。
-
-*   **前端 (Frontend)**: HTML + CSS + JavaScript (可搭配原生的 Fetch API 或 Axios 等工具)。負責渲染畫面、展示商品與接收使用者的點擊操作。
-*   **後端 (Backend)**: Java (建議使用 Spring Boot 框架)。負責處理核心功能，包含購物車運算、套用折扣設計模式 (Strategy Pattern)、庫存管理等。
+本系統採用**前後端分離 (Frontend-Backend Separation)**，透過 RESTful API 以 JSON 格式交換資料。
+*   **前端 (Frontend)**: HTML + CSS + JavaScript (採用原生 Fetch API 串接)。負責畫面渲染、購物車與後台管理介面。
+*   **後端 (Backend)**: Java (使用內建 `HttpServer` 建立的 `SimpleWebServer`)。負責處理核心邏輯，如登入驗證、購物車計算、結帳及商品管理。
 
 ---
 
-## 二、 後端伺服器設計 (Backend: Java Spring Boot)
-後端會延續原本寫在 `Design.md` 的核心類別，並加上 Controller 層來處理網路請求。
+## 二、 後端伺服器設計 (Backend: Java SimpleWebServer)
+採用單一伺服器入口 `SimpleWebServer` 提供靜態檔案伺服器與 API 端點：
 
-### 1. 控制層 (Controller 層 - API 端點)
-負責接收來自 HTML/JS 的 HTTP 請求，驗證參數並指派給底下的服務層處理。
-*   **`ProductController`**: 提供商品型錄查詢。
-*   **`CartController`**: 控制購物車內容增刪改查。
-*   **`OrderController`**: 負責最終結帳的動作。
+### 1. API 路由 (Contexts)
+負責接收 HTTP 請求並導向對應的處理方法：
+*   **`/api/products`**: 提供商品型錄查詢。
+*   **`/api/login`**: 處理客戶與管理員登入驗證。
+*   **`/api/cart/calculate`**: 即時計算購物車金額（含運費與折扣）。
+*   **`/api/cart/checkout`**: 處理結帳與庫存扣除。
+*   **`/api/products/sync`**: 管理員同步/更新商品資料。
 
-### 2. 核心邏輯層 (Model 層 - 純 Java 物件導向核心)
-將先前的設計直接應用在這裡：
-*   **實體類別**: `Product`, `User`, `CartItem`, `ShoppingCart`, `Order`
-*   **策略介面與實作 (Strategy Pattern)**:
-    *   `IDiscountStrategy` (例如實作 `PercentageDiscount` 全館八折)
-    *   `IShippingStrategy` (例如實作 `FreeShippingThreshold` 滿千免運)
+### 2. 核心邏輯層 (Model 層)
+*   **實體類別**: `Product`, `User`, `CartItem`, `ShoppingCart`, `Order` 等。
+*   **策略模式 (Strategy Pattern)**: `IDiscountStrategy` (折扣策略) 與 `IShippingStrategy` (運費策略)。
+*   **資料存取**: 透過 `CsvProductRepository` 讀寫 CSV 進行資料持久化。
 
 ---
 
 ## 三、 前端介面設計 (Frontend: HTML + JS)
 
-### 1. 頁面設計 (Pages)
-*   **`index.html` (商品瀏覽首頁)**
-    *   動態呼叫後端 API 取得商品清單，利用 JavaScript (DOM 操作) 自動生成商品卡片。
-    *   每個商品配有一個「Add to Cart (加到購物車)」按鈕。
-*   **`cart.html` (購物車與結帳頁)**
-    *   顯示清單：列出使用者目前所選的 `CartItem`，以及初步計算的小計 (Subtotal)。
-    *   結帳按鈕：點擊後送出結帳請求，並顯示包含「運費」與「折扣」的最終訂單資訊。
+### 單頁式應用 (SPA) - `index.html`
+將所有功能整合於單一頁面，透過模態視窗 (Modal) 與面板切換顯示狀態：
+*   **商品瀏覽與搜尋**: 支援即時搜尋與類別篩選，動態生成商品卡片。
+*   **購物車模組**: 即時顯示所選商品清單，提供小計與總金額試算。
+*   **結帳付款**: 透過模態視窗填寫付款資訊、套用折扣碼 (`SAVE10`, `FLAT50`) 及選擇運送方式。
+*   **管理員後台**: 供 `admin` 帳號登入後使用，支援商品的新增、編輯、刪除同步，與客戶資訊查詢。
 
 ---
 
-## 四、 API 互動介面規格 (RESTful API Endpoints)
-前後端溝通的合約 (Contract)，規定了網頁按鈕點下後，需呼叫哪個網址：
+## 四、 API 互動規格 (RESTful API Endpoints)
 
-### [商品相關]
-*   **`GET /api/products`**
-    *   作用：獲取所有可用商品資訊。
-    *   回傳範例：`[{"productId": 1, "name": "Laptop", "price": 30000, "stock": 10}, ...]`
-
-### [購物車相關]
-*   **`GET /api/cart/{userId}`**
-    *   作用：載入目前的購物車狀態。
-*   **`POST /api/cart/add`**
-    *   作用：點擊「加入購物車」時觸發。
-    *   送出資料：`{"userId": "U01", "productId": 1, "quantity": 1}`
-*   **`DELETE /api/cart/remove/{productId}`**
-    *   作用：從購物車中移除某項商品。
-
-### [訂單與結帳相關]
-*   **`POST /api/orders/checkout`**
-    *   作用：點擊結帳時觸發。後端收到請求後，會套用對應的 `IDiscountStrategy` 和 `IShippingStrategy` 計算最終價格並扣除庫存。
-    *   回傳範例：`{"orderId": "ORD-1001", "totalCost": 29000, "status": "Success"}`
+*   **`GET /api/products`**: 獲取所有商品清單。
+*   **`POST /api/login`**: 驗證帳號密碼並回傳權限狀態。
+*   **`POST /api/cart/calculate`**: 傳送目前購物車內容、運送方式與折扣碼，回傳試算後的總金額、運費與折扣。
+*   **`POST /api/cart/checkout`**: 傳送最終訂單資訊以完成結帳流程。
+*   **`POST /api/products/sync`**: (限管理員) 傳送最新的商品清單 JSON 以覆寫與更新資料庫庫存。

@@ -1,6 +1,0 @@
-Topic (主題): 13. E-commerce Shopping Platform
-
-​Description (描述): Design a system where users can browse products, add items to a cart, 
-place orders, and calculate total cost including discounts or delivery fees.
-
-(設計一個系統，讓用戶可以瀏覽產品、將商品加入購物車、下訂單，並計算包含折扣或運費在內的總費用。)
