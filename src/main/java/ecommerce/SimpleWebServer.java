@@ -5,7 +5,7 @@ import com.sun.net.httpserver.HttpServer;
 import ecommerce.class_.CartItem;
 import ecommerce.class_.CreditCardPayment;
 import ecommerce.class_.LinePayPayment;
-import ecommerce.class_.Order;
+import ecommerce.class_.OrderRecord;
 import ecommerce.class_.Product;
 import ecommerce.class_.ShoppingCart;
 import ecommerce.class_.User;
@@ -111,7 +111,7 @@ public class SimpleWebServer {
         ShoppingCart cart = buildCartFromRequest(requestData);
         IDiscountStrategy discountStrategy = createDiscountStrategy(discountCode);
         IShippingStrategy shippingStrategy = createShippingStrategy(shippingMethod);
-        Order order = new Order("CALC-" + System.currentTimeMillis(), null, cart.getItems(), discountStrategy, shippingStrategy);
+        OrderRecord order = new OrderRecord("CALC-" + System.currentTimeMillis(), null, cart.getItems(), discountStrategy, shippingStrategy);
 
         String json = String.format(
             "{\"subtotal\":%.2f,\"discount\":%.2f,\"shipping\":%.2f,\"total\":%.2f}",
@@ -176,7 +176,7 @@ public class SimpleWebServer {
             guest.getCart().addItem(item.getProduct(), item.getQuantity());
         }
 
-        Order order = system.createOrder(guest, discountStrategy, shippingStrategy);
+        OrderRecord order = system.createOrder(guest, discountStrategy, shippingStrategy);
         if (order == null) {
             sendJson(exchange, 500, "{\"success\":false,\"message\":\"訂單建立失敗。\"}");
             return;
@@ -371,7 +371,7 @@ public class SimpleWebServer {
     }
 
     // 將單筆結帳完成的訂單紀錄附加 (Append) 到 orders.csv 檔案的最後面
-    private static void appendOrderToCsv(Order order, String paymentMethod) {
+    private static void appendOrderToCsv(OrderRecord order, String paymentMethod) {
         Path path = Paths.get(ORDERS_CSV_FILE);
         
         // 確保目錄存在，若不存在則建立 (防止寫入失敗)

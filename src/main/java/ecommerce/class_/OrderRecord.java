@@ -5,7 +5,7 @@ import ecommerce.interface_.IPaymentProcessor;
 import ecommerce.interface_.IShippingStrategy;
 import java.util.List;
 
-public class Order {
+public class OrderRecord {
     private final String orderId;
     private final User buyer;
     private final List<CartItem> items;
@@ -13,7 +13,7 @@ public class Order {
     private final IShippingStrategy shippingStrategy;
     private String status; // 例如: "Pending", "Completed"
 
-    public Order(String orderId, User buyer, List<CartItem> items, 
+    public OrderRecord(String orderId, User buyer, List<CartItem> items, 
                  IDiscountStrategy discountStrategy, IShippingStrategy shippingStrategy) {
         this.orderId = orderId;
         this.buyer = buyer;

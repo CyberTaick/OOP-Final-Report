@@ -34,7 +34,7 @@ public class ShoppingSystem {
         return user;
     }
 
-    public Order createOrder(User user, IDiscountStrategy discountStrategy, IShippingStrategy shippingStrategy) {
+    public OrderRecord createOrder(User user, IDiscountStrategy discountStrategy, IShippingStrategy shippingStrategy) {
         if (user == null || user.getCart().getItems().isEmpty()) {
             return null;
         }
@@ -42,7 +42,7 @@ public class ShoppingSystem {
         for (CartItem item : user.getCart().getItems()) {
             snapshot.add(new CartItem(item.getProduct(), item.getQuantity()));
         }
-        return new Order("ORD-" + System.currentTimeMillis(), user, snapshot, discountStrategy, shippingStrategy);
+        return new OrderRecord("ORD-" + System.currentTimeMillis(), user, snapshot, discountStrategy, shippingStrategy);
     }
 
     public Product findProductById(String productId) {
