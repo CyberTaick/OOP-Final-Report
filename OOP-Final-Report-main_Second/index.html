@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>購物系統示範</title>
+  <link rel="stylesheet" href="web/style.css">
+  </head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand-wrap">
+        <h1>簡易購物車示範</h1>
+        <p class="subtitle">立即搜尋熱賣商品，點擊商品卡片查看詳細介紹</p>
+      </div>
+      <div class="top-actions">
+        <div class="user-area">
+          <button id="openLoginBtn" class="secondary">登入</button>
+          <button id="manageProductsBtn" class="secondary hidden">管理你的商品</button>
+          <span id="currentUser" class="user-badge hidden">
+            <strong id="displayName"></strong>
+            <button id="logoutBtn" class="secondary">登出</button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside id="categories" class="sidebar">
+      <h3>類別</h3>
+      <ul id="categoryList"></ul>
+    </aside>
+
+    <section id="products-section" class="content">
+      <div id="productListContainer">
+        <h2>商品列表</h2>
+        <div class="search product-search">
+          <input id="searchInput" placeholder="搜尋商品">
+          <button id="searchBtn" class="primary">🔍 搜尋</button>
+        </div>
+        <div id="products" class="grid"></div>
+      </div>
+      <section id="adminPanel" class="admin-panel hidden">
+        <div class="admin-header">
+          <h2>管理者系統</h2>
+          <div class="admin-tabs">
+            <button data-tab="products" class="active">商品列表</button>
+            <button data-tab="customers">客戶列表</button>
+            <button data-tab="discounts">折扣活動</button>
+          </div>
+        </div>
+        <div id="adminContent" class="admin-content"></div>
+      </section>
+    </section>
+
+    <aside id="cart-panel" class="cart-panel">
+      <h2>購物車</h2>
+      <div id="cart"></div>
+      <div class="cart-summary">
+        <div>小計: <span id="subtotal">0</span></div>
+        <div>運費: <span id="shipping">0</span></div>
+        <div>折扣: <span id="discount">0</span></div>
+        <div class="total">總計: <span id="total">0</span></div>
+      </div>
+      <button id="checkoutBtn" class="primary">前往結帳</button>
+      <div id="message" class="message"></div>
+    </aside>
+  </main>
+
+  <div id="productModal" class="modal hidden">
+    <div class="modal-dialog product-dialog">
+      <button class="close" id="closeProductModal" aria-label="關閉">×</button>
+      <div class="product-preview">
+        <div class="product-gallery" id="productGallery"></div>
+        <div class="product-info">
+          <h2 id="modalProductName"></h2>
+          <p id="modalProductDesc"></p>
+          <p>價格: <strong id="modalProductPrice"></strong></p>
+          <p>類別: <strong id="modalProductCategory"></strong></p>
+          <p>庫存: <strong id="modalProductStock"></strong></p>
+          <button id="modalAddBtn" class="primary">加入購物車</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="loginModal" class="modal hidden">
+    <div class="modal-dialog login-dialog">
+      <button class="close" id="closeLoginModal" aria-label="關閉">×</button>
+      <h2>會員登入</h2>
+      <label>身分
+        <select id="loginRole">
+          <option value="customer">客戶</option>
+          <option value="admin">管理員</option>
+        </select>
+      </label>
+      <label>帳號
+        <input id="loginUsername" placeholder="admin / customer">
+      </label>
+      <label>密碼
+        <input id="loginPassword" type="password" placeholder="密碼">
+      </label>
+      <button id="loginBtn" class="primary">登入</button>
+      <div id="loginModalMessage" class="message"></div>
+    </div>
+  </div>
+
+  <div id="paymentModal" class="modal hidden">
+    <div class="modal-dialog">
+      <button class="close" id="closePaymentModal" aria-label="關閉">×</button>
+      <h2>結帳付款</h2>
+      <div id="checkoutUserInfo"></div>
+      <label>付款方式
+        <select id="paymentMethod">
+          <option value="card">信用卡</option>
+          <option value="linepay">Line Pay</option>
+          <option value="atm">ATM 轉帳</option>
+        </select>
+      </label>
+      <label>姓名 <input id="checkoutName" placeholder="輸入收件姓名"></label>
+      <label>卡號 / 帳號 <input id="checkoutCard" placeholder="4242 4242 4242 4242"></label>
+      <label>運送方式
+        <select id="shippingSelect"></select>
+      </label>
+      <label>折扣碼 <input id="discountCode" placeholder="例如: SAVE10"></label>
+      <button id="applyDiscountBtn" class="secondary">套用折扣</button>
+      <div id="paymentMessage" class="message"></div>
+      <button id="confirmPaymentBtn" class="primary">確認付款</button>
+    </div>
+  </div>
+
+  <div id="adminEditModal" class="modal hidden">
+    <div class="modal-dialog admin-edit-dialog">
+      <button class="close" id="closeAdminEditModal" aria-label="關閉">×</button>
+      <h3>編輯商品</h3>
+      <div class="admin-form-single">
+        <label>商品名稱<input id="adminModalName" type="text"></label>
+        <label>類別<input id="adminModalCategory" type="text"></label>
+        <label>價格<input id="adminModalPrice" type="number" min="0"></label>
+        <label>庫存<input id="adminModalStock" type="number" min="0"></label>
+        <!--<label class="admin-form-full">描述<textarea id="adminModalDescription"></textarea></label>-->
+        <label class="admin-form-full">圖片網址（逗號分隔）<input id="adminModalImages" type="text" placeholder="https://... , https://..."></label>
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px">
+          <button id="adminModalCancelBtn" class="secondary">取消</button>
+          <button id="adminModalSaveBtn" class="primary">儲存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="web/jsToJava.js"></script>
+</body>
+</html>
