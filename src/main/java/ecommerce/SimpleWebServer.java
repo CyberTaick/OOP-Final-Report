@@ -14,11 +14,14 @@ import ecommerce.data_access_object.CsvProductRepository;
 import ecommerce.interface_.IDiscountStrategy;
 import ecommerce.interface_.IPaymentProcessor;
 import ecommerce.interface_.IShippingStrategy;
+import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,6 +51,15 @@ public class SimpleWebServer {
         server.setExecutor(null);
         System.out.println("🚀 SimpleWebServer 已啟動，請開啟 http://localhost:8080/");
         server.start();
+
+        // Automatically open the default browser (Edge if it's the system default)
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+            }
+        } catch (IOException | URISyntaxException e) {
+            System.err.println("自動開啟瀏覽器失敗：" + e.getMessage());
+        }
     }
 
     // 處理 GET /api/products 請求，回傳所有商品清單的 JSON
@@ -72,7 +84,7 @@ public class SimpleWebServer {
             body.append(",\"price\":").append(p.getPrice());
             body.append(",\"stock\":").append(p.getStockQuantity());
             body.append(",\"active\":true");
-            body.append(",\"description\":\"").append(escapeJson(p.getDetails())).append("\"");
+            body.append(",\"description\":\"\"");
             body.append(",\"category\":\"").append(escapeJson(p.getCategory())).append("\"");
             body.append(",\"images\":[\"https://via.placeholder.com/300?text=").append(escapeJson(p.getName())).append("\"]");
             body.append("}");

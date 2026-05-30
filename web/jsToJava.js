@@ -206,9 +206,15 @@ function logout() {
 
 function updateUserUI() {
   const loggedIn = !!state.user;
+  const isAdmin = loggedIn && state.user.role === "管理員";
+
   dom.openLoginBtn.classList.toggle("hidden", loggedIn);
   dom.currentUser.classList.toggle("hidden", !loggedIn);
-  dom.manageProductsBtn.classList.toggle("hidden", !loggedIn || state.user.role !== "管理員");
+  dom.manageProductsBtn.classList.toggle("hidden", !isAdmin);
+
+  // 管理員不顯示結帳按鈕與商品詳情的加入購物車按鈕
+  dom.checkoutBtn.classList.toggle("hidden", isAdmin);
+  dom.modalAddBtn.classList.toggle("hidden", isAdmin);
 
   if (loggedIn) {
     dom.displayName.textContent = `${state.user.name} (${state.user.role})`;
@@ -219,6 +225,9 @@ function updateUserUI() {
   } else if (!dom.adminPanel.classList.contains("hidden")) {
     renderAdminPanel();
   }
+
+  // 重新渲染商品卡片以更新「加入購物車」按鈕的顯示狀態
+  renderProducts();
 }
 
 function updateCheckoutUserInfo() {
@@ -397,11 +406,11 @@ function renderProducts() {
           <img src="${product.images[0] || "https://via.placeholder.com/300"}" alt="${product.name}">
           <div class="card-body">
             <h3>${product.name}</h3>
-            <p>${product.description || "沒有商品描述"}</p>
+            <p>${product.description || ""}</p>
             <p>類別：${product.category || "一般"}</p>
             <p>價格：$${product.price.toFixed(0)}</p>
             <p>庫存：${product.stock}</p>
-            <button class="primary" data-id="${product.id}">加入購物車</button>
+            ${state.user && state.user.role === "管理員" ? "" : `<button class="primary" data-id="${product.id}">加入購物車</button>`}
           </div>
         </article>
       `;
@@ -420,7 +429,7 @@ function openProductModal(productId) {
   }
   currentProduct = product;
   dom.modalProductName.textContent = product.name;
-  dom.modalProductDesc.textContent = product.description || "沒有商品描述";
+  dom.modalProductDesc.textContent = product.description || "";
   dom.modalProductPrice.textContent = `$${product.price.toFixed(0)}`;
   dom.modalProductCategory.textContent = product.category || "一般";
   dom.modalProductStock.textContent = product.stock;
@@ -432,6 +441,13 @@ function hideProductModal() {
 }
 
 function addToCart(productId) {
+  // 未登入則要求登入顧客帳號
+  if (!state.user || state.user.role !== "客戶") {
+    showMessage("請先登入顧客帳號再進行購物。", true);
+    showLoginModal();
+    return;
+  }
+
   const product = state.products.find((item) => String(item.id) === String(productId));
   if (!product) {
     showMessage("找不到指定商品。", true);
@@ -522,6 +538,11 @@ async function refreshCartSummary() {
 }
 
 function openPaymentModal() {
+  if (!state.user || state.user.role !== "客戶") {
+    showMessage("請先登入顧客帳號。", true);
+    showLoginModal();
+    return;
+  }
   if (!state.cart.length) {
     showMessage("購物車沒有商品，無法結帳。", true);
     return;
