@@ -12,16 +12,18 @@ Explation：
 │   └── contains: List<CartItem>
 ├── User (用戶)
 │   └── contains: ShoppingCart
-└── Order (訂單)
+└── OrderRecord (訂單)
     ├── contains: User (Buyer)
     ├── contains: List<CartItem>
     ├── uses: IDiscountStrategy
-    └── uses: IShippingStrategy
+    ├── uses: IShippingStrategy
+    └── uses: IPaymentProcessor
 
 2. 系統管理 (System Manager)
 └── ShoppingSystem (平台總管)
     ├── contains: List<Product>
-    └── contains: List<User>
+    ├── contains: List<User>
+    └── uses: IProductRepository
 
 3. 策略介面與實作 (Strategies - Interfaces & Implementations)
 ├── IDiscountStrategy <<Interface>> (折扣策略)
@@ -31,5 +33,9 @@ Explation：
 │   ├── implements: FlatRateShipping (固定運費)
 │   └── implements: FreeShippingThreshold (滿額免運)
 │
-└── IPaymentProcessor <<Interface>> (支付策略)
-    └── (等待後續實作金流服務，如 CreditCardPayment)
+├── IPaymentProcessor <<Interface>> (支付處理)
+│   ├── implements: CreditCardPayment (信用卡付款)
+│   └── implements: LinePayPayment (LINE Pay 付款)
+│
+└── IProductRepository <<Interface>> (商品資料存取)
+    └── implements: CsvProductRepository (CSV 檔案商品倉儲)
